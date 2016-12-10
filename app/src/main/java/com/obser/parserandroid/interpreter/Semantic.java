@@ -1,11 +1,14 @@
-package com.obser.parserandroid;
+package com.obser.parserandroid.interpreter;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
 import com.obser.parserandroid.bean.ExprNode;
+import com.obser.parserandroid.fragment.DrawFragment;
 import com.obser.parserandroid.utils.FunUtils;
+
+import java.util.ArrayList;
 
 /**
  * Created by Administrator on 2016/12/5 0005.
@@ -17,10 +20,16 @@ public class Semantic {
             scale_x=1, scale_y=1,   // 横、纵比例因子
             rot_angle=0;            // 旋转角度
     private Handler handler;
+    private int left, top;
 
-    public Semantic(Handler handler){
+    public void setHandler(Handler handler) {
         this.handler = handler;
     }
+
+    public Semantic(){
+
+    }
+
     /* 计算被绘制点的坐标 */
     public double[] calcCoord(ExprNode hor_Exp, ExprNode ver_Exp){
         double horCord, verCord, hor_tmp;
@@ -48,32 +57,71 @@ public class Semantic {
     }
 
     /* 循环绘制点坐标 */
-    public void drawLoop(double start, double end, double step, ExprNode horPtr, ExprNode verPtr){
-
-        for(Parser.parameter.caseParmPtr = start; Parser.parameter.caseParmPtr <= end; Parser.parameter.caseParmPtr += step){
-            double[] result = calcCoord(horPtr, verPtr);
-            drawPixel(result);
-        }
-//        drawPixel(calcCoord(horPtr, verPtr), (end - start)/step);
-    }
-
-//    private void drawPixel(double[] result, double length) {
-//        Message message = new Message();
-//        Bundle bundle = new Bundle();
-//        bundle.putDouble("length", length);
-//        bundle.putDoubleArray("coordinate", result);
-//        message.setData(bundle);
-//        message.what = 7;
-//        handler.sendMessage(message);
+//    public void drawLoop(double start, double end, double step, ExprNode horPtr, ExprNode verPtr){
 //
+//        for(Parser.parameter.caseParmPtr = start; Parser.parameter.caseParmPtr <= end; Parser.parameter.caseParmPtr += step){
+//            double[] result = calcCoord(horPtr, verPtr);
+//            drawPixel(result);
+//        }
 //    }
 
+    public void drawLoop(double start, double end, double step, ExprNode horPtr, ExprNode verPtr){
+        ArrayList<Float> pts = new ArrayList<Float>();
+        for(Parser.parameter.caseParmPtr = start; Parser.parameter.caseParmPtr <= end; Parser.parameter.caseParmPtr += step){
+            double[] result = calcCoord(horPtr, verPtr);
+            pts.add((float) result[0]);
+            pts.add((float) result[1]);
+        }
+        drawPixel(pts);
+    }
+
+//    public void drawLoop(double start, double end, double step, ExprNode horPtr, ExprNode verPtr){
+//        ArrayList<Float> pts = new ArrayList<Float>();
+//        for(Parser.parameter.caseParmPtr = start; Parser.parameter.caseParmPtr <= end; Parser.parameter.caseParmPtr += step){
+//            double[] result = calcCoord(horPtr, verPtr);
+//            if(Parser.parameter.caseParmPtr == start){
+//                pts.add((float) result[0]);
+//                pts.add((float) result[1]);
+//            } else if(Parser.parameter.caseParmPtr == end){
+//                pts.add((float) result[0]);
+//                pts.add((float) result[1]);
+//                drawPixel(pts);
+//            } else {
+//                pts.add((float) result[0]);
+//                pts.add((float) result[1]);
+//                pts.add((float) result[0]);
+//                pts.add((float) result[1]);
+//            }
+//
+//        }
+//    }
+
+    private void drawPixel(ArrayList<Float> list) {
+        int size = list.size();
+        float[] pts = new float[size];
+        for(int i = 0; i < size; i ++){
+            pts[i] = list.get(i);
+        }
+//        CoordData.setPts(pts);
+        Message message = new Message();
+        Bundle bundle = new Bundle();
+        bundle.putFloatArray("coordinate", pts);
+        message.what = DrawFragment.DRAW;
+        message.setData(bundle);
+        handler.sendMessage(message);
+//        Message message = Message.obtain();
+//        Bundle bundle = new Bundle();
+//        message.what = DrawFragment.DRAW;
+//        bundle.putFloatArray("coordinate", pts);
+//        message.setData(bundle);
+//        handler.sendMessage(message);
+    }
 
 
     private void drawPixel(double[] result) {
         Message message = Message.obtain();
         Bundle bundle = new Bundle();
-        message.what = MainActivity.DRAW;
+        message.what = DrawFragment.DRAW;
         bundle.putDoubleArray("coordinate", result);
         message.setData(bundle);
         handler.sendMessage(message);
@@ -111,6 +159,7 @@ public class Semantic {
         this.scale_y = scale_y;
         this.rot_angle = rot_angle;
     }
+
 //    /* 删除一棵语法树 */
 //    public static void delExprTree(ExprNode root){
 //        if(root == null)    return;

@@ -1,4 +1,4 @@
-package com.obser.parserandroid;
+package com.obser.parserandroid.interpreter;
 
 import android.os.Handler;
 
@@ -21,14 +21,19 @@ public class Parser {
                     rot_angle=0;            // 旋转角度
     public static Parameter parameter = new Parameter(0);           // 参数T的存储空间
     private StringBuffer iLog;
-    
-
     private StringBuffer eLog;
-    public Parser(Scanner scanner, Handler handler){
+    private static boolean DEBUG = true;
+    public void setFlag(boolean flag){
+        DEBUG = flag;
+    }
+    public Parser(Scanner scanner){
         this.scanner = scanner;
-        semantic = new Semantic(handler);
+        semantic = new Semantic();
         iLog = new StringBuffer();
         eLog = new StringBuffer();
+    }
+    public void setHandler(Handler handler){
+        semantic.setHandler(handler);
     }
     public void parser(){
         LogUtils.i("enter in parser");
@@ -68,6 +73,7 @@ public class Parser {
             case SCALE   :  scaleStatement();  break;
             case ROT     :	  rotStatement();  break;
             case FOR     :	  forStatement();  break;
+            default      :                     break;
 //            default      :	  syntaxError(2);
         }
         LogUtils.i("exit from statement");
@@ -187,8 +193,11 @@ public class Parser {
         y_ptr = expression();                                   // 构造纵坐标表达式语法树
         matchToken(TokenData.Token_Type.R_BRACKET); call_match(")");
 
-        semantic.init(origin_x, origin_y, scale_x, scale_y, rot_angle);
-        semantic.drawLoop(start, end, step, x_ptr, y_ptr);      // 绘制图形
+        if(!DEBUG){
+            semantic.init(origin_x, origin_y, scale_x, scale_y, rot_angle);
+            semantic.drawLoop(start, end, step, x_ptr, y_ptr);      // 绘制图形
+        }
+
 //        delExprTree(x_ptr);
         x_ptr = null;                                           // 释放横坐标语法树所占空间
 //        delExprTree(y_ptr);
@@ -221,7 +230,8 @@ public class Parser {
             left = makeExprNode(token_tmp, left, right);
                                          //构造运算的语法树，结果为左子树
         }
-        tree_trace(left);                   //打印表达式的语法树
+        if(left != null)
+            tree_trace(left);                   //打印表达式的语法树
         LogUtils.i("exit from expression");
         iLog.append("\n");iLog.append("exit from expression");
         return left;                        //返回最终表达式的语法树
@@ -359,7 +369,7 @@ public class Parser {
         switch (case_of) {
             case 1:
                 LogUtils.e("Line " + scanner.LineNo + " : " + token.getLexeme() + " 错误记号 ");
-                eLog.append("\n");eLog.append("Line " + scanner.LineNo + " : " + token.getLexeme() + " 错误记号 ");
+                eLog.append("\n");eLog.append("Line " + scanner.LineNo + " : " + token.getLexeme() + " 是错误记号 ");
 //                scanner.closeScanner();
                 break;
             case 2:
@@ -408,4 +418,5 @@ public class Parser {
         errCount = 0;
         return e;
     }
+
 }

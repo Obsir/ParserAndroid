@@ -1,7 +1,7 @@
 package com.obser.parserandroid.bean;
 
 /**
- * 语法树节点类型
+ * 语法树节点类
  * Created by Administrator on 2016/12/4 0004.
  */
 public class ExprNode {

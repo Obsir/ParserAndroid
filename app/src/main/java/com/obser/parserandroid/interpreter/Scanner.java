@@ -1,4 +1,4 @@
-package com.obser.parserandroid;
+package com.obser.parserandroid.interpreter;
 
 import com.lidroid.xutils.util.IOUtils;
 import com.obser.parserandroid.bean.Token;
@@ -121,7 +121,7 @@ public class Scanner {
         char ch;
         emptyTokenString();
 
-        //过滤源程序中的空格、TAB、回车等，遇到文件结束符返回空
+        //过滤源程序中的空格、TAB、回车等，遇到文件结束符则返回空
         for(;;){
             c = getChar();
             ch = (char) c;
@@ -164,7 +164,7 @@ public class Scanner {
             backChar();
             token.setType(TokenData.Token_Type.CONST_ID);
             token.setLexeme(buff.toString());
-            token.setValue(Integer.parseInt(buff.toString()));
+            token.setValue(Double.parseDouble(buff.toString()));
             return token;
         } else {    //不是字母和数字，则一定是符号
             switch(ch) {
